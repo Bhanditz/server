@@ -47,11 +47,20 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/gomail.v2"
+
+	"github.com/LibreRead/server/users"
 )
 
 type Env struct {
 	db          *sql.DB
 	RedisClient *redis.Client
+}
+
+func DBMiddleware(e *Env) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Set("e", e)
+		c.Next()
+	}
 }
 
 const (
@@ -324,9 +333,12 @@ func StartServer() {
 
 	// Set database and redis environment
 	env := &Env{db: db, RedisClient: client}
+
+	r.Use(DBMiddleware(env))
+
 	// Router
 	r.GET("/", env.GetHomePage)
-	r.GET("/signin", env.GetSignIn)
+	r.GET("/signin", users.GetSignIn)
 	r.POST("/signin", env.PostSignIn)
 	r.GET("/forgot-password", GetForgotPassword)
 	r.POST("/forgot-password", env.PostForgotPassword)
