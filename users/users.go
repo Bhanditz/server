@@ -9,7 +9,8 @@ import (
 func GetSignIn(c *gin.Context) {
 
 	e := c.MustGet("e")
-	fmt.Println(e.db)
+	fmt.Println(e)
+	fmt.Println(e.DB)
 
 	// email := session.GetEmailFromSession(c)
 	// if email != nil {

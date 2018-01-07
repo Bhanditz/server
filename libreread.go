@@ -52,7 +52,7 @@ import (
 )
 
 type Env struct {
-	db          *sql.DB
+	DB          *sql.DB
 	RedisClient *redis.Client
 }
 
@@ -332,7 +332,7 @@ func StartServer() {
 	}
 
 	// Set database and redis environment
-	env := &Env{db: db, RedisClient: client}
+	env := &Env{DB: db, RedisClient: client}
 
 	r.Use(DBMiddleware(env))
 
@@ -437,7 +437,7 @@ func _GetEmailFromSession(c *gin.Context) interface{} {
 }
 
 func (e *Env) _GetUserId(email string) int64 {
-	rows, err := e.db.Query("SELECT `id` FROM `user` WHERE `email` = ?", email)
+	rows, err := e.DB.Query("SELECT `id` FROM `user` WHERE `email` = ?", email)
 	CheckError(err)
 
 	var userId int64
@@ -451,7 +451,7 @@ func (e *Env) _GetUserId(email string) int64 {
 }
 
 func (e *Env) _GetBookInfo(fileName string) (int64, string, string) {
-	rows, err := e.db.Query("SELECT `id`, `format`, `file_path` FROM `book` WHERE `filename` = ?", fileName)
+	rows, err := e.DB.Query("SELECT `id`, `format`, `file_path` FROM `book` WHERE `filename` = ?", fileName)
 	CheckError(err)
 
 	var (
@@ -469,7 +469,7 @@ func (e *Env) _GetBookInfo(fileName string) (int64, string, string) {
 }
 
 func (e *Env) _GetBookMetaData(fileName string) (string, string, string, string) {
-	rows, err := e.db.Query("SELECT `title`, `author`, `cover`, `format` FROM `book` WHERE `filename` = ?", fileName)
+	rows, err := e.DB.Query("SELECT `title`, `author`, `cover`, `format` FROM `book` WHERE `filename` = ?", fileName)
 	CheckError(err)
 
 	var (
@@ -488,7 +488,7 @@ func (e *Env) _GetBookMetaData(fileName string) (string, string, string, string)
 }
 
 func (e *Env) _CheckCurrentlyReading(bookId int64) int64 {
-	rows, err := e.db.Query("SELECT `id` FROM `currently_reading` WHERE `book_id` = ?", bookId)
+	rows, err := e.DB.Query("SELECT `id` FROM `currently_reading` WHERE `book_id` = ?", bookId)
 	CheckError(err)
 
 	var currentlyReadingId int64
@@ -504,7 +504,7 @@ func (e *Env) _CheckCurrentlyReading(bookId int64) int64 {
 func (e *Env) _UpdateCurrentlyReading(currentlyReadingId int64, bookId int64, userId int64, dateRead string) {
 	if currentlyReadingId == 0 {
 		// Insert a new record
-		stmt, err := e.db.Prepare("INSERT INTO `currently_reading` (book_id, user_id, date_read) VALUES (?, ?, ?)")
+		stmt, err := e.DB.Prepare("INSERT INTO `currently_reading` (book_id, user_id, date_read) VALUES (?, ?, ?)")
 		CheckError(err)
 
 		res, err := stmt.Exec(bookId, userId, dateRead)
@@ -516,7 +516,7 @@ func (e *Env) _UpdateCurrentlyReading(currentlyReadingId int64, bookId int64, us
 		fmt.Println(id)
 	} else {
 		// Update dateRead for the given currentlyReadingId
-		stmt, err := e.db.Prepare("UPDATE `currently_reading` SET date_read=? WHERE id=?")
+		stmt, err := e.DB.Prepare("UPDATE `currently_reading` SET date_read=? WHERE id=?")
 		CheckError(err)
 
 		_, err = stmt.Exec(dateRead, currentlyReadingId)
@@ -664,7 +664,7 @@ func (e *Env) EditBook(c *gin.Context) {
 		fileName := c.PostForm("filename")
 		fmt.Println(fileName)
 
-		rows, err := e.db.Query("SELECT id, title, author, cover, url from book where filename=?", fileName)
+		rows, err := e.DB.Query("SELECT id, title, author, cover, url from book where filename=?", fileName)
 
 		var (
 			bookId  int64
@@ -697,7 +697,7 @@ func (e *Env) EditBook(c *gin.Context) {
 		author := c.PostForm("author")
 		fmt.Println(author)
 
-		stmt, err := e.db.Prepare("update book set title=?, author=? where filename=?")
+		stmt, err := e.DB.Prepare("update book set title=?, author=? where filename=?")
 		CheckError(err)
 
 		_, err = stmt.Exec(title, author, fileName)
@@ -710,7 +710,7 @@ func (e *Env) EditBook(c *gin.Context) {
 
 			oCover = "./uploads/img/" + file.Filename
 
-			stmt, err := e.db.Prepare("update book set cover=? where filename=?")
+			stmt, err := e.DB.Prepare("update book set cover=? where filename=?")
 			CheckError(err)
 
 			_, err = stmt.Exec(oCover, fileName)
@@ -800,7 +800,7 @@ func (e *Env) DeleteBook(c *gin.Context) {
 
 			var bookId int64
 			var title, author, cover, url string
-			rows, err := e.db.Query("select id, title, author, cover, url from book where filename=?", fileName)
+			rows, err := e.DB.Query("select id, title, author, cover, url from book where filename=?", fileName)
 			CheckError(err)
 
 			for rows.Next() {
@@ -809,7 +809,7 @@ func (e *Env) DeleteBook(c *gin.Context) {
 			}
 			rows.Close()
 
-			stmt, err := e.db.Prepare("delete from book where filename=?")
+			stmt, err := e.DB.Prepare("delete from book where filename=?")
 			CheckError(err)
 
 			_, err = stmt.Exec(fileName)
@@ -818,7 +818,7 @@ func (e *Env) DeleteBook(c *gin.Context) {
 			currentlyReadingId := e._CheckCurrentlyReading(bookId)
 
 			if currentlyReadingId != 0 {
-				stmt, err := e.db.Prepare("delete from currently_reading where book_id=?")
+				stmt, err := e.DB.Prepare("delete from currently_reading where book_id=?")
 				CheckError(err)
 
 				_, err = stmt.Exec(currentlyReadingId)
@@ -1109,7 +1109,7 @@ type BookStruct struct {
 type BookStructList []BookStruct
 
 func (e *Env) _GetCurrentlyReadingBooks(userId int64) []int64 {
-	rows, err := e.db.Query("SELECT `book_id` FROM `currently_reading` WHERE `user_id` = ? ORDER BY `date_read` DESC LIMIT ?, ?", userId, 0, 12)
+	rows, err := e.DB.Query("SELECT `book_id` FROM `currently_reading` WHERE `user_id` = ? ORDER BY `date_read` DESC LIMIT ?, ?", userId, 0, 12)
 	CheckError(err)
 
 	var crBooks []int64
@@ -1126,7 +1126,7 @@ func (e *Env) _GetCurrentlyReadingBooks(userId int64) []int64 {
 }
 
 func (e *Env) _GetBook(bookId int64) (string, string, string) {
-	rows, err := e.db.Query("SELECT `title`, `url`, `cover` FROM `book` WHERE `id` = ?", bookId)
+	rows, err := e.DB.Query("SELECT `title`, `url`, `cover` FROM `book` WHERE `id` = ?", bookId)
 	CheckError(err)
 
 	var (
@@ -1149,7 +1149,7 @@ func (e *Env) _GetBook(bookId int64) (string, string, string) {
 }
 
 func (e *Env) _GetTotalBooksCount(userId int64) int64 {
-	rows, err := e.db.Query("SELECT COUNT(*) AS count FROM `book` WHERE `user_id` = ?", userId)
+	rows, err := e.DB.Query("SELECT COUNT(*) AS count FROM `book` WHERE `user_id` = ?", userId)
 	CheckError(err)
 
 	var count int64
@@ -1177,7 +1177,7 @@ func _GetTotalPages(booksCount int64) int64 {
 }
 
 func (e *Env) _GetPaginatedBooks(userId int64, limit int64, offset int64) *BookStructList {
-	rows, err := e.db.Query("SELECT `title`, `url`, `cover` FROM `book` WHERE `user_id` = ? ORDER BY `id` DESC LIMIT ? OFFSET ?", userId, limit, offset)
+	rows, err := e.DB.Query("SELECT `title`, `url`, `cover` FROM `book` WHERE `user_id` = ? ORDER BY `id` DESC LIMIT ? OFFSET ?", userId, limit, offset)
 	CheckError(err)
 
 	books := BookStructList{}
@@ -1320,7 +1320,7 @@ func (e *Env) GetSignIn(c *gin.Context) {
 		c.Redirect(302, "/")
 	}
 
-	rows, err := e.db.Query("select email from user where id = ?", 1)
+	rows, err := e.DB.Query("select email from user where id = ?", 1)
 	CheckError(err)
 
 	defer rows.Close()
@@ -1356,7 +1356,7 @@ func GetSignOut(c *gin.Context) {
 }
 
 func (e *Env) _GetHashedPassword(email string) []byte {
-	rows, err := e.db.Query("select password_hash from user where email = ?", email)
+	rows, err := e.DB.Query("select password_hash from user where email = ?", email)
 	CheckError(err)
 
 	var hashedPassword []byte
@@ -1403,7 +1403,7 @@ func GetForgotPassword(c *gin.Context) {
 
 func (e *Env) PostForgotPassword(c *gin.Context) {
 	email := c.PostForm("email")
-	rows, err := e.db.Query("select id, name from user where email = ?", email)
+	rows, err := e.DB.Query("select id, name from user where email = ?", email)
 	CheckError(err)
 
 	var (
@@ -1419,7 +1419,7 @@ func (e *Env) PostForgotPassword(c *gin.Context) {
 	if userID != 0 {
 		token := RandSeq(40)
 
-		stmt, err := e.db.Prepare("update user set forgot_password_token=? where id=?")
+		stmt, err := e.DB.Prepare("update user set forgot_password_token=? where id=?")
 		CheckError(err)
 
 		_, err = stmt.Exec(token, userID)
@@ -1446,7 +1446,7 @@ func (e *Env) PostForgotPassword(c *gin.Context) {
 func (e *Env) GetResetPassword(c *gin.Context) {
 	token := c.Request.URL.Query()["token"][0]
 	fmt.Println(token)
-	rows, err := e.db.Query("select email from user where forgot_password_token = ?", token)
+	rows, err := e.DB.Query("select email from user where forgot_password_token = ?", token)
 	CheckError(err)
 
 	var email string
@@ -1476,7 +1476,7 @@ func (e *Env) PostResetPassword(c *gin.Context) {
 	hashedPassword, err := bcrypt.GenerateFromPassword(password, bcrypt.DefaultCost)
 	CheckError(err)
 
-	stmt, err := e.db.Prepare("update user set password_hash=?, forgot_password_token=? where email=?")
+	stmt, err := e.DB.Prepare("update user set password_hash=?, forgot_password_token=? where email=?")
 	CheckError(err)
 
 	_, err = stmt.Exec(hashedPassword, "", email)
@@ -1489,7 +1489,7 @@ func (e *Env) PostResetPassword(c *gin.Context) {
 
 func (e *Env) GetSignUp(c *gin.Context) {
 	var email string
-	rows, err := e.db.Query("select email from user where id = ?", 1)
+	rows, err := e.DB.Query("select email from user where id = ?", 1)
 	CheckError(err)
 
 	defer rows.Close()
@@ -1515,7 +1515,7 @@ func (e *Env) PostSignUp(c *gin.Context) {
 	hashedPassword, err := bcrypt.GenerateFromPassword(password, bcrypt.DefaultCost)
 	CheckError(err)
 
-	stmt, err := e.db.Prepare("INSERT INTO user (name, email, password_hash) VALUES (?, ?, ?)")
+	stmt, err := e.DB.Prepare("INSERT INTO user (name, email, password_hash) VALUES (?, ?, ?)")
 	CheckError(err)
 
 	res, err := stmt.Exec(name, email, hashedPassword)
@@ -1543,7 +1543,7 @@ func RandSeq(n int64) string {
 }
 
 func (e *Env) _FillConfirmTable(token string, dateGenerated string, dateExpires string, userId int64) {
-	stmt, err := e.db.Prepare("INSERT INTO confirm (token, date_generated, date_expires, user_id) VALUES (?, ?, ?, ?)")
+	stmt, err := e.DB.Prepare("INSERT INTO confirm (token, date_generated, date_expires, user_id) VALUES (?, ?, ?, ?)")
 	CheckError(err)
 
 	_, err = stmt.Exec(token, dateGenerated, dateExpires, userId)
@@ -1624,7 +1624,7 @@ func (e *Env) _SendConfirmationEmail(userId int64, name string, email string) {
 
 func (e *Env) _GetConfirmTableRecord(token string, c *gin.Context) (int64, string, int64) {
 	// Get id from confirm table with the token got from url.
-	rows, err := e.db.Query("select id, date_expires, user_id from confirm where token = ?", token)
+	rows, err := e.DB.Query("select id, date_expires, user_id from confirm where token = ?", token)
 	CheckError(err)
 
 	var (
@@ -1649,7 +1649,7 @@ func (e *Env) _GetConfirmTableRecord(token string, c *gin.Context) (int64, strin
 }
 
 func (e *Env) _UpdateConfirmTable(currentDateTime string, used int64, id int64) {
-	stmt, err := e.db.Prepare("update confirm set date_used=?, used=? where id=?")
+	stmt, err := e.DB.Prepare("update confirm set date_used=?, used=? where id=?")
 	CheckError(err)
 
 	_, err = stmt.Exec(currentDateTime, 1, id)
@@ -1657,7 +1657,7 @@ func (e *Env) _UpdateConfirmTable(currentDateTime string, used int64, id int64) 
 }
 
 func (e *Env) _SetUserConfirmed(confirmed int64, userId int64) {
-	stmt, err := e.db.Prepare("update user set confirmed=? where id=?")
+	stmt, err := e.DB.Prepare("update user set confirmed=? where id=?")
 	CheckError(err)
 
 	_, err = stmt.Exec(confirmed, userId)
@@ -1687,7 +1687,7 @@ func (e *Env) ConfirmEmail(c *gin.Context) {
 }
 
 func (e *Env) _GetNameEmailFromUser(userId int64) (string, string) {
-	rows, err := e.db.Query("select name, email from user where id = ?", userId)
+	rows, err := e.DB.Query("select name, email from user where id = ?", userId)
 	CheckError(err)
 
 	var (
@@ -1783,7 +1783,7 @@ func (e *Env) _InsertBookRecord(
 	uploadedOn string,
 	userId int64,
 ) int64 {
-	stmt, err := e.db.Prepare("INSERT INTO book (title, filename, file_path, author, url, cover, pages, format, uploaded_on, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+	stmt, err := e.DB.Prepare("INSERT INTO book (title, filename, file_path, author, url, cover, pages, format, uploaded_on, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
 	CheckError(err)
 
 	res, err := stmt.Exec(title, fileName, filePath, author, url, cover, pagesInt, format, uploadedOn, userId)
@@ -2566,7 +2566,7 @@ func (e *Env) PostPDFHighlight(c *gin.Context) {
 		// Get book id
 		bookId, _, _ := e._GetBookInfo(pdfHighlight.FileName)
 
-		stmt, err := e.db.Prepare("INSERT INTO `pdf_highlighter` (book_id, user_id, highlight_color, highlight_top, highlight_comment) VALUES (?, ?, ?, ?, ?)")
+		stmt, err := e.DB.Prepare("INSERT INTO `pdf_highlighter` (book_id, user_id, highlight_color, highlight_top, highlight_comment) VALUES (?, ?, ?, ?, ?)")
 		CheckError(err)
 
 		res, err := stmt.Exec(bookId, userId, pdfHighlight.HighlightColor, "", "")
@@ -2578,7 +2578,7 @@ func (e *Env) PostPDFHighlight(c *gin.Context) {
 		fmt.Println(id)
 
 		for i := 0; i < len(pdfHighlight.DivIndex); i++ {
-			stmt, err := e.db.Prepare("INSERT INTO `pdf_highlighter_detail` (highlighter_id, page_index, div_index, html_content) VALUES (?, ?, ?, ?)")
+			stmt, err := e.DB.Prepare("INSERT INTO `pdf_highlighter_detail` (highlighter_id, page_index, div_index, html_content) VALUES (?, ?, ?, ?)")
 			CheckError(err)
 
 			_, err = stmt.Exec(id, pdfHighlight.PageIndex[i], pdfHighlight.DivIndex[i], pdfHighlight.HTMLContent[i])
@@ -2604,14 +2604,14 @@ func (e *Env) DeletePDFHighlight(c *gin.Context) {
 		fmt.Println(deleteHighlight)
 
 		// Delete highlight record with the given id
-		stmt, err := e.db.Prepare("DELETE FROM `pdf_highlighter` WHERE id=?")
+		stmt, err := e.DB.Prepare("DELETE FROM `pdf_highlighter` WHERE id=?")
 		CheckError(err)
 
 		_, err = stmt.Exec(deleteHighlight.Id)
 		CheckError(err)
 
 		// Delete detail attached to the highlight
-		stmt, err = e.db.Prepare("DELETE FROM `pdf_highlighter_detail` WHERE highlighter_id=?")
+		stmt, err = e.DB.Prepare("DELETE FROM `pdf_highlighter_detail` WHERE highlighter_id=?")
 		CheckError(err)
 
 		_, err = stmt.Exec(deleteHighlight.Id)
@@ -2654,7 +2654,7 @@ func (e *Env) GetPDFHighlights(c *gin.Context) {
 		// Get book id
 		bookId, _, _ := e._GetBookInfo(fileName)
 
-		rows, err := e.db.Query("select id, highlight_color, highlight_top, highlight_comment from pdf_highlighter where book_id = ? and user_id = ?", bookId, userId)
+		rows, err := e.DB.Query("select id, highlight_color, highlight_top, highlight_comment from pdf_highlighter where book_id = ? and user_id = ?", bookId, userId)
 		CheckError(err)
 
 		pdfHighlightColorComment := []GetPDFHighlightColorComment{}
@@ -2680,7 +2680,7 @@ func (e *Env) GetPDFHighlights(c *gin.Context) {
 
 		pdfHighlightDetail := []GetPDFHighlightDetail{}
 		for _, v := range pdfHighlightColorComment {
-			rows, err := e.db.Query("select page_index, div_index, html_content from pdf_highlighter_detail where highlighter_id=?", v.Id)
+			rows, err := e.DB.Query("select page_index, div_index, html_content from pdf_highlighter_detail where highlighter_id=?", v.Id)
 			CheckError(err)
 
 			for rows.Next() {
@@ -2727,7 +2727,7 @@ func (e *Env) PostPDFHighlightColor(c *gin.Context) {
 		fmt.Println(pdfHighlightColor)
 
 		// Update highlight color for the given id
-		stmt, err := e.db.Prepare("UPDATE `pdf_highlighter` SET highlight_color=? WHERE id=?")
+		stmt, err := e.DB.Prepare("UPDATE `pdf_highlighter` SET highlight_color=? WHERE id=?")
 		CheckError(err)
 
 		_, err = stmt.Exec(pdfHighlightColor.HighlightColor, pdfHighlightColor.Id)
@@ -2754,7 +2754,7 @@ func (e *Env) PostPDFHighlightComment(c *gin.Context) {
 		fmt.Println(pdfHighlightComment)
 
 		// Update highlight comment for the given id
-		stmt, err := e.db.Prepare("UPDATE `pdf_highlighter` SET highlight_top=?, highlight_comment=? WHERE id=?")
+		stmt, err := e.DB.Prepare("UPDATE `pdf_highlighter` SET highlight_top=?, highlight_comment=? WHERE id=?")
 		CheckError(err)
 
 		_, err = stmt.Exec(pdfHighlightComment.Top, pdfHighlightComment.Comment, pdfHighlightComment.Id)
@@ -2802,7 +2802,7 @@ func (e *Env) GetCollections(c *gin.Context) {
 	if email != nil {
 		userId := e._GetUserId(email.(string))
 
-		rows, err := e.db.Query("select id, title, description, cover from collection where user_id = ?", userId)
+		rows, err := e.DB.Query("select id, title, description, cover from collection where user_id = ?", userId)
 		CheckError(err)
 
 		collectionBooks := []CollectionBooks{}
@@ -2849,7 +2849,7 @@ func (e *Env) GetAddCollection(c *gin.Context) {
 	if email != nil {
 		userId := e._GetUserId(email.(string))
 
-		rows, err := e.db.Query("select id, cover from book where user_id = ?", userId)
+		rows, err := e.DB.Query("select id, cover from book where user_id = ?", userId)
 		CheckError(err)
 
 		books := []BooksList{}
@@ -2891,7 +2891,7 @@ func (e *Env) PostNewCollection(c *gin.Context) {
 		err := c.BindJSON(&postCollection)
 		CheckError(err)
 
-		rows, err := e.db.Query("select cover from book where id = ?", postCollection.Books[len(postCollection.Books)-1])
+		rows, err := e.DB.Query("select cover from book where id = ?", postCollection.Books[len(postCollection.Books)-1])
 		CheckError(err)
 
 		var cover string
@@ -2915,7 +2915,7 @@ func (e *Env) PostNewCollection(c *gin.Context) {
 		// -----------------------------------------------------
 		// Fields: id, title, description, books, cover, user_id
 		// -----------------------------------------------------
-		stmt, err := e.db.Prepare("INSERT INTO `collection` (title, description, books, cover, user_id) VALUES (?, ?, ?, ?, ?)")
+		stmt, err := e.DB.Prepare("INSERT INTO `collection` (title, description, books, cover, user_id) VALUES (?, ?, ?, ?, ?)")
 		CheckError(err)
 
 		res, err := stmt.Exec(postCollection.Title, postCollection.Description, books, cover, userId)
@@ -2935,7 +2935,7 @@ func (e *Env) GetCollection(c *gin.Context) {
 	if email != nil {
 		collectionId := c.Param("id")
 
-		rows, err := e.db.Query("select id, title, description, books from collection where id = ?", collectionId)
+		rows, err := e.DB.Query("select id, title, description, books from collection where id = ?", collectionId)
 		CheckError(err)
 
 		var (
@@ -2958,7 +2958,7 @@ func (e *Env) GetCollection(c *gin.Context) {
 			bookInt, err := strconv.Atoi(bookSplit[i])
 			CheckError(err)
 
-			rows, err := e.db.Query("select title, url, cover from book where id = ?", bookInt)
+			rows, err := e.DB.Query("select title, url, cover from book where id = ?", bookInt)
 			CheckError(err)
 
 			if rows.Next() {
@@ -3009,7 +3009,7 @@ func (e *Env) DeleteCollection(c *gin.Context) {
 	if email != nil {
 		collectionId := c.Param("id")
 
-		stmt, err := e.db.Prepare("delete from collection where id=?")
+		stmt, err := e.DB.Prepare("delete from collection where id=?")
 		CheckError(err)
 
 		_, err = stmt.Exec(collectionId)
@@ -3053,13 +3053,13 @@ func (e *Env) PostSettings(c *gin.Context) {
 				hashedPassword, err := bcrypt.GenerateFromPassword([]byte(postSettings.Password), bcrypt.DefaultCost)
 				CheckError(err)
 
-				stmt, err := e.db.Prepare("UPDATE `user` SET email=?, password_hash=? WHERE email=?")
+				stmt, err := e.DB.Prepare("UPDATE `user` SET email=?, password_hash=? WHERE email=?")
 				CheckError(err)
 
 				_, err = stmt.Exec(postSettings.Email, hashedPassword, email.(string))
 				CheckError(err)
 			} else {
-				stmt, err := e.db.Prepare("UPDATE `user` SET email=? WHERE email=?")
+				stmt, err := e.DB.Prepare("UPDATE `user` SET email=? WHERE email=?")
 				CheckError(err)
 
 				_, err = stmt.Exec(postSettings.Email, email.(string))
