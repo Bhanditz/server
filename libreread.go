@@ -58,7 +58,8 @@ type Env struct {
 
 func DBMiddleware(e *Env) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.Set("e", e)
+		c.Set("DB", e.DB)
+		c.Set("RedisClient", e.RedisClient)
 		c.Next()
 	}
 }
