@@ -15,7 +15,7 @@ GNU Affero General Public License for more details.--->
 <!---You should have received a copy of the GNU Affero General Public License
 along with LibreRead.  If not, see <http://www.gnu.org/licenses/>.--->
 
-# LibreRead [![Build Status](https://api.travis-ci.org/LibreRead/server.svg?branch=master)](https://travis-ci.org/LibreRead/server) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com) [![Chat](https://img.shields.io/badge/chat-Rocket.Chat-red.svg)](https://chat.libreread.org) [![PayPal Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/paynirmal) [![Become a Patron](https://img.shields.io/badge/Patron-Patreon-red.svg)](https://www.patreon.com/mysticmode)
+# LibreRead  [![Build Status](https://api.travis-ci.org/LibreRead/server.svg?branch=master)](https://travis-ci.org/LibreRead/server) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com) [![Chat](https://img.shields.io/badge/chat-Rocket.Chat-red.svg)](https://chat.libreread.org) [![PayPal Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/paynirmal) [![Become a Patron](https://img.shields.io/badge/Patron-Patreon-red.svg)](https://www.patreon.com/mysticmode) [![Backers on Open Collective](https://opencollective.com/libreread/backers/badge.svg)](#backers) [![Sponsors on Open Collective](https://opencollective.com/libreread/sponsors/badge.svg)](#sponsors)
 
 Self-hosted Free(Libre) Ebook Reader. https://libreread.org
 
@@ -45,3 +45,33 @@ Install go 1.9, redis 4 (default settings on port 6379) and optionally elasticse
 <img src="https://www.digitalocean.com/assets/media/logos-badges/png/DO_Logo_Horizontal_Black-a93a7c21.png" height="40px" alt="Supported by Digital Ocean" />
 
 If you find LibreRead useful, you could support our development by either making an [one-time donation](https://www.paypal.me/paynirmal) or by [becoming a patron](https://www.patreon.com/mysticmode). Thank you! 😍
+
+#### Contributors
+
+This project exists thanks to all the people who contribute. [[Contribute](CONTRIBUTING.md)].
+<a href="graphs/contributors"><img src="https://opencollective.com/libreread/contributors.svg?width=890" /></a>
+
+
+#### Backers
+
+Thank you to all our backers! 🙏 [[Become a backer](https://opencollective.com/libreread#backer)]
+
+<a href="https://opencollective.com/libreread#backers" target="_blank"><img src="https://opencollective.com/libreread/backers.svg?width=890"></a>
+
+
+#### Sponsors
+
+Support this project by becoming a sponsor. Your logo will show up here with a link to your website. [[Become a sponsor](https://opencollective.com/libreread#sponsor)]
+
+<a href="https://opencollective.com/libreread/sponsor/0/website" target="_blank"><img src="https://opencollective.com/libreread/sponsor/0/avatar.svg"></a>
+<a href="https://opencollective.com/libreread/sponsor/1/website" target="_blank"><img src="https://opencollective.com/libreread/sponsor/1/avatar.svg"></a>
+<a href="https://opencollective.com/libreread/sponsor/2/website" target="_blank"><img src="https://opencollective.com/libreread/sponsor/2/avatar.svg"></a>
+<a href="https://opencollective.com/libreread/sponsor/3/website" target="_blank"><img src="https://opencollective.com/libreread/sponsor/3/avatar.svg"></a>
+<a href="https://opencollective.com/libreread/sponsor/4/website" target="_blank"><img src="https://opencollective.com/libreread/sponsor/4/avatar.svg"></a>
+<a href="https://opencollective.com/libreread/sponsor/5/website" target="_blank"><img src="https://opencollective.com/libreread/sponsor/5/avatar.svg"></a>
+<a href="https://opencollective.com/libreread/sponsor/6/website" target="_blank"><img src="https://opencollective.com/libreread/sponsor/6/avatar.svg"></a>
+<a href="https://opencollective.com/libreread/sponsor/7/website" target="_blank"><img src="https://opencollective.com/libreread/sponsor/7/avatar.svg"></a>
+<a href="https://opencollective.com/libreread/sponsor/8/website" target="_blank"><img src="https://opencollective.com/libreread/sponsor/8/avatar.svg"></a>
+<a href="https://opencollective.com/libreread/sponsor/9/website" target="_blank"><img src="https://opencollective.com/libreread/sponsor/9/avatar.svg"></a>
+
+
